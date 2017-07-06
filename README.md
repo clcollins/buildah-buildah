@@ -34,6 +34,7 @@ mountpoint=$(buildah mount $container)
 # Some vars for ease of use
 buildah_dir="${mountpoint}/buildah"
 buildah_dst="${buildah_dir}/src/github.com/projectatomic/buildah"
+working_dir='/buildah/src/github.com/projectatomic/buildah'
 
 # Make the $buildah_dir in the container
 mkdir $buildah_dir
@@ -48,9 +49,15 @@ pushd $buildah_dst
 make
 popd ; popd
 
+# Add the install and uninstall scripts
+buildah copy $container 'install.sh' '/install.sh'
+buildah copy $container 'uninstall.sh' '/uninstall.sh'
+chmod +x ${mountpoint}/install.sh ${mountpoint}/uninstall.sh
+
 # Set the Atomic install & uninstall labels
 buildah config --label INSTALL="sudo docker run --privileged -v /usr/local:/usr/local:z -it \${IMAGE} ./install.sh" $container
 buildah config --label UNINSTALL="sudo docker run --privileged -v /usr/local:/usr/local:z -it \${IMAGE} ./uninstall.sh" $container
+buildah config --workingdir $working_dir $container
 
 # Create a container image from the container (Docker formatted)
 buildah unmount $container
