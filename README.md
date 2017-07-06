@@ -23,8 +23,46 @@ Hey, why not?
 # Build from a Dockerfile, with Buildah
 buildah bud .
 
-# Build with Buildah native commands (in a Bash script)
-bash ./buildah-build-buildah.sh
+# Build with Buildah native commands
+
+# Create a container
+container=$(buildah from centos:centos7)
+
+# Mount the container filesystem 
+mountpoint=$(buildah mount $container)
+
+# Some vars for ease of use
+buildah_dir="${mountpoint}/buildah"
+buildah_dst="${buildah_dir}/src/github.com/projectatomic/buildah"
+
+# Make the $buildah_dir in the container
+mkdir $buildah_dir
+
+# Clone the source
+git clone https://github.com/projectatomic/buildah $buildah_dst
+
+# Build Buildah
+pushd $buildah_dir
+export GOPATH=$(pwd)
+pushd $buildah_dst
+make
+popd ; popd
+
+# Set the Atomic install & uninstall labels
+buildah config --label INSTALL="sudo docker run --privileged -v /usr/local:/usr/local:z -it \${IMAGE} ./install.sh" $container
+buildah config --label UNINSTALL="sudo docker run --privileged -v /usr/local:/usr/local:z -it \${IMAGE} ./uninstall.sh" $container
+
+# Create a container image from the container (Docker formatted)
+buildah unmount $container
+buildah commit -f docker $container buildah
+
+# Move the image to the Docker space
+mkdir /tmp/buildah
+buildah push buildah dir:/tmp/buildah
+pushd /tmp/buildah
+tar cvf /tmp/buildah.tar .
+docker_image=$(docker import /tmp/buildah.tar)
+docker tag $docker_image buildah:latest
 ```
 
 Install Options
