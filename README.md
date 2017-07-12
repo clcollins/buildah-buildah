@@ -64,6 +64,8 @@ buildah unmount $container
 buildah commit -f docker $container buildah
 
 # Move the image to the Docker space
+
+# Ugh - this totally does not work - need to find a way, Chris
 mkdir /tmp/buildah
 buildah push buildah dir:/tmp/buildah
 pushd /tmp/buildah
