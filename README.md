@@ -63,15 +63,10 @@ buildah config --workingdir $working_dir $container
 buildah unmount $container
 buildah commit -f docker $container buildah
 
-# Move the image to the Docker space
+# Move the image to your local Docker storage
+buildah push buildah docker-daemon:buildah:latest
 
-# Ugh - this totally does not work - need to find a way, Chris
-mkdir /tmp/buildah
-buildah push buildah dir:/tmp/buildah
-pushd /tmp/buildah
-tar cvf /tmp/buildah.tar .
-docker_image=$(docker import /tmp/buildah.tar)
-docker tag $docker_image buildah:latest
+# The image is now available to the Docker daemon to see and interact with, too.
 ```
 
 Install Options
