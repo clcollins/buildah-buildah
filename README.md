@@ -67,6 +67,7 @@ buildah commit -f docker $container buildah
 buildah push buildah docker-daemon:buildah:latest
 
 # The image is now available to the Docker daemon to see and interact with, too.
+docker inspect buildah:latest
 ```
 
 Install Options
@@ -78,10 +79,10 @@ Install Options
 # Runs in privileged mode
 
 # Install
-sudo docker run --privileged -v /usr/local:/usr/local:z -it \${IMAGE} ./install.sh
+sudo docker run --privileged -v /usr/local:/usr/local:z -it buildah:latest ./install.sh
 
 # Uninstall
-sudo docker run --privileged -v /usr/local:/usr/local:z -it \${IMAGE} ./install.sh
+sudo docker run --privileged -v /usr/local:/usr/local:z -it buildah:latest ./uninstall.sh
 ```
 
 **Install with the Atomic Command**
